@@ -1,0 +1,46 @@
+/**
+ * JavaCC template file created by SF JavaCC plugin 1.5.28+ wizard for JavaCC 1.5.0+
+ */
+
+PARSER_BEGIN(Parser)
+package com.simplejava.parser;
+
+
+public class Parser{
+    private String source;
+
+    public Parser(Reader reader, String source){
+        this(reader);
+        this.source = source;
+    }
+}
+
+PARSER_END(Parser)
+
+SPECIAL_TOKEN :{
+  < SPACES : ([ " ", "\t", "\r", "\n" ])+ >
+}
+
+SPECIAL_TOKEN :{
+  < LINE_COMMENT :
+    "//" (~[ "\n", "\r" ])*
+    (
+      "\n"
+    | "\r\n"
+    | "\r"
+    )? >
+}
+
+MORE :{
+  "/*" : IN_BLOCK_COMMENT
+}
+
+< IN_BLOCK_COMMENT >
+MORE :{
+  < ~[ ] >
+}
+
+< IN_BLOCK_COMMENT >
+SPECIAL_TOKEN :{
+  "*/" : DEFAULT
+}
