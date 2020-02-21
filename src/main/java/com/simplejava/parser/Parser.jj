@@ -12,6 +12,7 @@ import java.io.Reader;
 import com.simplejava.ast.*;
 import com.simplejava.ast.ExprNode.*;
 import com.simplejava.ast.ExprNode.LiteralNode.*;
+import com.simplejava.entity.*;
 
 public class Parser{
     private String source;
@@ -90,6 +91,15 @@ TOKEN :{
   >
 }
 
+TOKEN : {
+    <CLASS :"class">
+}
+
+TOKEN :{
+  < IDENTIFIER : [ "a"-"z", "A"-"Z", "_" ] ([ "a"-"z", "A"-"Z", "_", "0"-"9" ])* >
+}
+
+
 ExprNode primary():{
     Token t;
     ExprNode n;
@@ -98,12 +108,30 @@ ExprNode primary():{
     |   t = <STRING><EOF>{return new StringLiteralNode(location(t),t.image);}
 }
 
+ClassEntity defClass():{
+    Token t,name;
+}{
+    t = <CLASS> name=<IDENTIFIER> "{" "}"{return new ClassEntity(location(t), name.image);}
+}
+
+Declarations topDefs():{
+    Declarations declarations = new Declarations();
+    ClassEntity classEntity;
+}{
+    (
+        classEntity = defClass() {declarations.addClass(classEntity);}
+    )*{
+        return declarations;
+    }
+}
+
 AST compilationUnit():{
     Token t;
+    Declarations declarations;
 }{
     {
         t = getToken(1);
-    }<EOF>{
-        return new AST(location(t));
+    }declarations = topDefs() <EOF>{
+        return new AST(location(t), declarations);
     }
 }

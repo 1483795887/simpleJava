@@ -3,6 +3,7 @@ package com.simplejava.ast;
 import com.simplejava.type.TypeNode;
 
 import java.io.PrintStream;
+import java.util.List;
 
 public class Dumper {
     private PrintStream printStream;
@@ -13,7 +14,7 @@ public class Dumper {
         indent = 0;
     }
 
-    void printClass(Object object, Location location) {
+    public void printClass(Object object, Location location) {
         printIndent();
         printStream.println("<" + object.getClass().getSimpleName() + ">" + location.toString());
     }
@@ -28,6 +29,14 @@ public class Dumper {
 
     public void printMember(String name, TypeNode typeNode) {
         printPair(name, typeNode.getTypeRef().toString());
+    }
+
+    public void printMember(String name, List<? extends Dumpable> objects) {
+        for (Dumpable dumpable : objects) {
+            printIndent();
+            printStream.println(name + ":");
+            dumpable.dump(this);
+        }
     }
 
     private void printIndent() {

@@ -1,7 +1,7 @@
 package com.simplejava.compiler;
 
+import com.simplejava.ast.AST;
 import com.simplejava.ast.Dumper;
-import com.simplejava.ast.Node;
 import com.simplejava.exception.CompileException;
 import com.simplejava.exception.SyntaxException;
 import com.simplejava.parser.ParseException;
@@ -45,18 +45,18 @@ public class Compiler {
         }
     }
 
-    private Node parseFile(String path) throws SyntaxException {
+    private AST parseFile(String path) throws SyntaxException {
         File file = new File(path);
         Parser parser = getParser(file);
         try {
-            return parser.primary();
+            return parser.compilationUnit();
         } catch (ParseException | TokenMgrError e) {
             throw new SyntaxException(e.getMessage());
         }
     }
 
     private void compile(String path) throws CompileException {
-        Node node = parseFile(path);
-        node.dump(dumper);
+        AST ast = parseFile(path);
+        ast.dump(dumper);
     }
 }
