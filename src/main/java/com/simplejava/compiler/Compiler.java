@@ -24,10 +24,13 @@ public class Compiler {
 
     public static void main(String[] args) {
         Compiler compiler = new Compiler();
-        try {
-            compiler.compile("testFiles/literTest/integerLiter.java");
-        } catch (CompileException e) {
-            compiler.errorHandler.error(e.getMessage());
+        CompileOption option = new CompileOption(args);
+        for (String filePath : option.getCompileFiles()) {
+            try {
+                compiler.compile(filePath);
+            } catch (CompileException e) {
+                compiler.errorHandler.error(e.getMessage());
+            }
         }
     }
 

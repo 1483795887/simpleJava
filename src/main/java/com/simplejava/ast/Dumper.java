@@ -22,6 +22,10 @@ public class Dumper {
         printPair(name, value);
     }
 
+    public void printMember(String name, String value) {
+        printPair(name, value);
+    }
+
     public void printMember(String name, TypeNode typeNode) {
         printPair(name, typeNode.getTypeRef().toString());
     }

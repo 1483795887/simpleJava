@@ -2,7 +2,7 @@ package com.simplejava.ast.ExprNode.LiteralNode;
 
 import com.simplejava.ast.Dumper;
 import com.simplejava.ast.Location;
-import com.simplejava.type.IntegerTypeRef;
+import com.simplejava.type.BasicTypeRefs;
 import com.simplejava.type.TypeRef;
 
 public class IntegerLiteralNode extends LiteralNode {
@@ -34,7 +34,7 @@ public class IntegerLiteralNode extends LiteralNode {
             v = Long.parseLong(value, 10);
         if (minus)
             v = -v;
-        return new IntegerLiteralNode(location, IntegerTypeRef.longRef(), v);
+        return new IntegerLiteralNode(location, BasicTypeRefs.longRef(), v);
     }
 
     @Override
