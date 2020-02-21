@@ -92,7 +92,10 @@ TOKEN :{
 }
 
 TOKEN : {
-    <CLASS :"class">
+        <CLASS :"class">
+    |   <PUBLIC :"public">
+    |   <PROTECTED:"protected">
+    |   <PRIVATE:"private">
 }
 
 TOKEN :{
@@ -108,10 +111,25 @@ ExprNode primary():{
     |   t = <STRING><EOF>{return new StringLiteralNode(location(t),t.image);}
 }
 
+AccessSpecifier accessSpecifier():{}{
+     [
+            <PUBLIC>{return AccessSpecifier.PUBLIC;}
+        |   <PROTECTED>{return AccessSpecifier.PROTECTED;}
+        |   <PRIVATE>{return AccessSpecifier.PRIVATE;}
+     ]  {return AccessSpecifier.DEFAULT;}
+
+}
+
 ClassEntity defClass():{
     Token t,name;
+    AccessSpecifier accessSpecifier;
 }{
-    t = <CLASS> name=<IDENTIFIER> "{" "}"{return new ClassEntity(location(t), name.image);}
+    accessSpecifier = accessSpecifier() t = <CLASS> name=<IDENTIFIER> "{" "}"{
+        if(accessSpecifier != AccessSpecifier.PUBLIC && accessSpecifier != AccessSpecifier.DEFAULT){
+            throw new ParseException("class must be public or package-private");
+        }
+        return new ClassEntity(location(t),accessSpecifier, name.image);
+    }
 }
 
 Declarations topDefs():{
