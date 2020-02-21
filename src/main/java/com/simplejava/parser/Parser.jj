@@ -1,10 +1,17 @@
 /**
  * JavaCC template file created by SF JavaCC plugin 1.5.28+ wizard for JavaCC 1.5.0+
  */
+options {
+    STATIC = false;
+    UNICODE_INPUT = true;
+}
 
 PARSER_BEGIN(Parser)
 package com.simplejava.parser;
-
+import java.io.Reader;
+import com.simplejava.ast.*;
+import com.simplejava.ast.ExprNode.*;
+import com.simplejava.ast.ExprNode.LiteralNode.*;
 
 public class Parser{
     private String source;
@@ -13,6 +20,8 @@ public class Parser{
         this(reader);
         this.source = source;
     }
+
+    public Location location(Token t){return new Location(source, t);}
 }
 
 PARSER_END(Parser)
@@ -43,4 +52,29 @@ MORE :{
 < IN_BLOCK_COMMENT >
 SPECIAL_TOKEN :{
   "*/" : DEFAULT
+}
+
+TOKEN :{
+  < INTEGER :
+        ("-")?([ "1"-"9" ] ([ "0"-"9" ])*
+  | 	"0" [ "x", "X" ] ([ "0"-"9", "a"-"f" ])+
+  | 	"0" ([ "0"-"7" ])* )
+  >
+}
+
+ExprNode primary():{
+    Token t;
+    ExprNode n;
+}{
+    t = <INTEGER><EOF> {return IntegerLiteralNode.intLiteralNode(location(t), t.image);}
+}
+
+AST compilationUnit():{
+    Token t;
+}{
+    {
+        t = getToken(1);
+    }<EOF>{
+        return new AST(location(t));
+    }
 }
