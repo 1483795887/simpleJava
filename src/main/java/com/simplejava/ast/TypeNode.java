@@ -1,10 +1,14 @@
-package com.simplejava.type;
+package com.simplejava.ast;
 
-public class TypeNode {
+import com.simplejava.type.Type;
+import com.simplejava.type.TypeRef;
+
+public class TypeNode extends Node {
     private Type type;
     private TypeRef typeRef;
 
-    public TypeNode(TypeRef typeRef) {
+    public TypeNode(Location location, TypeRef typeRef) {
+        super(location);
         this.typeRef = typeRef;
     }
 
@@ -22,5 +26,10 @@ public class TypeNode {
 
     public void setTypeRef(TypeRef typeRef) {
         this.typeRef = typeRef;
+    }
+
+    @Override
+    public void _dump(Dumper dumper) {
+
     }
 }

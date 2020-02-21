@@ -9,10 +9,13 @@ options {
 PARSER_BEGIN(Parser)
 package com.simplejava.parser;
 import java.io.Reader;
+import java.util.List;
+import java.util.ArrayList;
 import com.simplejava.ast.*;
 import com.simplejava.ast.ExprNode.*;
 import com.simplejava.ast.ExprNode.LiteralNode.*;
 import com.simplejava.entity.*;
+import com.simplejava.type.*;
 
 public class Parser{
     private String source;
@@ -96,12 +99,22 @@ TOKEN : {
     |   <PUBLIC :"public">
     |   <PROTECTED:"protected">
     |   <PRIVATE:"private">
+    |   <CHAR :"char">
+    |   <INT :"int">
+    |   <SHORT: "short">
+    |   <LONG:"long">
+    |   <STRINGT:"string">
 }
 
 TOKEN :{
   < IDENTIFIER : [ "a"-"z", "A"-"Z", "_" ] ([ "a"-"z", "A"-"Z", "_", "0"-"9" ])* >
 }
 
+String name():{
+    Token t;
+}{
+    t = <IDENTIFIER> {return t.image;}
+}
 
 ExprNode primary():{
     Token t;
@@ -109,6 +122,28 @@ ExprNode primary():{
 }{
         t = <INTEGER><EOF> {return IntegerLiteralNode.intLiteralNode(location(t), t.image);}
     |   t = <STRING><EOF>{return new StringLiteralNode(location(t),t.image);}
+}
+
+TypeRef typeBase():{}{
+        <CHAR>{return BasicTypeRefs.charRef();}
+    |   <SHORT>{return BasicTypeRefs.shortRef();}
+    |   <INT>{return BasicTypeRefs.intRef();}
+    |   <LONG>{return BasicTypeRefs.longRef();}
+    |   <STRINGT>{return BasicTypeRefs.stringRef();}
+}
+
+TypeRef typeRef():{
+    TypeRef typeRef;
+}{
+    typeRef = typeBase(){return typeRef;}
+}
+
+TypeNode type():{
+    Token t;
+    TypeRef typeRef;
+}{
+    {t = getToken(1);}
+    typeRef = typeRef() {return new TypeNode(location(t), typeRef);}
 }
 
 AccessSpecifier accessSpecifier():{}{
@@ -120,15 +155,41 @@ AccessSpecifier accessSpecifier():{}{
 
 }
 
+List<Variable> defVars():{
+    List<Variable> vars = new ArrayList<>();
+    TypeNode typeNode;
+    AccessSpecifier specifier;
+    String name;
+    Token t;
+}{
+    specifier = accessSpecifier() typeNode = type() {t = getToken(1);} name = name(){
+        vars.add(new Variable(location(t), specifier, typeNode, name, null));
+    } (
+        "," name = name(){vars.add(new Variable(location(t), specifier, typeNode, name,null));}
+    )*";"{
+        return vars;
+    }
+}
+
+List<Member> defMembers():{
+    List<Member> members = new ArrayList<>();
+    List<Variable> vars;
+}{
+    (vars = defVars(){members.addAll(vars);})*{return members;}
+}
+
 ClassEntity defClass():{
     Token t,name;
     AccessSpecifier accessSpecifier;
+    List<Member> members;
 }{
-    accessSpecifier = accessSpecifier() t = <CLASS> name=<IDENTIFIER> "{" "}"{
+    accessSpecifier = accessSpecifier() t = <CLASS> name=<IDENTIFIER> "{"
+    members = defMembers()
+    "}"{
         if(accessSpecifier != AccessSpecifier.PUBLIC && accessSpecifier != AccessSpecifier.DEFAULT){
             throw new ParseException("class must be public or package-private");
         }
-        return new ClassEntity(location(t),accessSpecifier, name.image);
+        return new ClassEntity(location(t), accessSpecifier, name.image, members);
     }
 }
 

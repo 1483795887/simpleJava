@@ -1,7 +1,5 @@
 package com.simplejava.ast;
 
-import com.simplejava.type.TypeNode;
-
 import java.io.PrintStream;
 import java.util.List;
 
@@ -32,10 +30,24 @@ public class Dumper {
     }
 
     public void printMember(String name, List<? extends Dumpable> objects) {
+        printIndent();
+        indent++;
         for (Dumpable dumpable : objects) {
-            printIndent();
             printStream.println(name + ":");
             dumpable.dump(this);
+        }
+        indent--;
+    }
+
+    public void printMember(String name, Dumpable dumpable) {
+        printIndent();
+        if (dumpable == null) {
+            printStream.println(name + ":null");
+        } else {
+            printStream.println(name + ":");
+            indent++;
+            dumpable.dump(this);
+            indent--;
         }
     }
 

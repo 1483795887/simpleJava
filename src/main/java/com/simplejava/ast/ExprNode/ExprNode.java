@@ -2,7 +2,7 @@ package com.simplejava.ast.ExprNode;
 
 import com.simplejava.ast.Location;
 import com.simplejava.ast.Node;
-import com.simplejava.type.TypeNode;
+import com.simplejava.ast.TypeNode;
 
 abstract public class ExprNode extends Node {
     protected TypeNode typeNode;
