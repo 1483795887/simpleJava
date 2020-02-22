@@ -1,20 +1,28 @@
 package com.simplejava.type;
 
-public class BasicTypeRefs {
+public class BasicTypeRefs extends NamedTypeRef {
+    public BasicTypeRefs(String name) {
+        super(name);
+    }
+
     public static NamedTypeRef charRef() {
-        return new ClassTypeRef("java.lang.Character");
+        return new BasicTypeRefs("C");
     }
 
     public static NamedTypeRef shortRef() {
-        return new ClassTypeRef("java.lang.Short");
+        return new BasicTypeRefs("S");
     }
 
     public static NamedTypeRef intRef() {
-        return new ClassTypeRef("java.lang.Integer");
+        return new BasicTypeRefs("I");
     }
 
     public static NamedTypeRef longRef() {
-        return new ClassTypeRef("java.lang.Long");
+        return new BasicTypeRefs("J");
+    }
+
+    public static NamedTypeRef voidRef() {
+        return new BasicTypeRefs("V");
     }
 
     public static NamedTypeRef stringRef() {

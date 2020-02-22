@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import com.simplejava.ast.*;
 import com.simplejava.ast.ExprNode.*;
 import com.simplejava.ast.ExprNode.LiteralNode.*;
+import com.simplejava.ast.StmtNode.*;
 import com.simplejava.entity.*;
 import com.simplejava.type.*;
 
@@ -103,6 +104,7 @@ TOKEN : {
     |   <INT :"int">
     |   <SHORT: "short">
     |   <LONG:"long">
+    |   <VOID :"void">
     |   <STRINGT:"string">
 }
 
@@ -120,8 +122,8 @@ ExprNode primary():{
     Token t;
     ExprNode n;
 }{
-        t = <INTEGER><EOF> {return IntegerLiteralNode.intLiteralNode(location(t), t.image);}
-    |   t = <STRING><EOF>{return new StringLiteralNode(location(t),t.image);}
+        t = <INTEGER> {return IntegerLiteralNode.intLiteralNode(location(t), t.image);}
+    |   t = <STRING>{return new StringLiteralNode(location(t),t.image);}
 }
 
 TypeRef typeBase():{}{
@@ -129,6 +131,7 @@ TypeRef typeBase():{}{
     |   <SHORT>{return BasicTypeRefs.shortRef();}
     |   <INT>{return BasicTypeRefs.intRef();}
     |   <LONG>{return BasicTypeRefs.longRef();}
+    |   <VOID>{return BasicTypeRefs.voidRef();}
     |   <STRINGT>{return BasicTypeRefs.stringRef();}
 }
 
@@ -155,33 +158,83 @@ AccessSpecifier accessSpecifier():{}{
 
 }
 
-List<Variable> defVars():{
-    List<Variable> vars = new ArrayList<>();
+List<MemberVariable> defMemberVars():{
+    List<MemberVariable> vars = new ArrayList<>();
     TypeNode typeNode;
     AccessSpecifier specifier;
     String name;
     Token t;
 }{
     specifier = accessSpecifier() typeNode = type() {t = getToken(1);} name = name(){
-        vars.add(new Variable(location(t), specifier, typeNode, name, null));
-    } (
-        "," name = name(){vars.add(new Variable(location(t), specifier, typeNode, name,null));}
+    vars.add(new MemberVariable(location(t), specifier, typeNode, name, null));
+} (
+        "," name = name(){vars.add(new MemberVariable(location(t), specifier, typeNode, name,null));}
     )*";"{
         return vars;
     }
 }
 
-List<Member> defMembers():{
-    List<Member> members = new ArrayList<>();
-    List<Variable> vars;
+Parameter param():{
+    String name;
+    TypeNode type;
 }{
-    (vars = defVars(){members.addAll(vars);})*{return members;}
+    type = type() name = name() {return new Parameter(type.getLocation(), type, name, null);}//TODO:init之后加入初始值
+}
+
+Params params():{
+    Parameter parameter,parameters1;
+    List<Parameter> parameters = new ArrayList<>();
+}{
+    parameters1 = param() {parameters.add(parameters1);}
+    (","parameter = param() {parameters.add(parameter);})*
+    {return new Params(parameters);}
+}
+
+BlockNode blockNode():{
+    List<StmtNode> stmtList = new ArrayList<>();
+    Token t;
+}{
+    t = "{""}"{return new BlockNode(location(t), stmtList);}
+}
+
+Function defFunction():{
+    AccessSpecifier accessSpecifier;
+    TypeNode retType;
+    String name;
+    boolean hasParam = false;
+    Params params = null;
+    BlockNode body;
+    Token t;
+}{
+    {t = getToken(1);}accessSpecifier = accessSpecifier()
+    retType = type()
+    name = name()
+    "(" [params = params(){hasParam = true;}] ")"
+    body = blockNode() {
+        if(!hasParam){
+            params = new Params(new ArrayList<>());
+        }
+        FunctionTypeRef typeRef = new FunctionTypeRef(retType.getTypeRef(), params.getTypeRef());
+        return new Function(location(t), accessSpecifier,typeRef,name, body );
+    }
+}
+
+List<Entity> defMembers():{
+    List<Entity> members = new ArrayList<>();
+    List<MemberVariable> vars;
+    Function function;
+}{
+    (
+        LOOKAHEAD(accessSpecifier() type() name() "(")
+        function = defFunction() {members.add(function);}
+      | vars = defMemberVars(){members.addAll(vars);}
+    )*{return members;}
 }
 
 ClassEntity defClass():{
     Token t,name;
     AccessSpecifier accessSpecifier;
-    List<Member> members;
+    List<Entity> members;
 }{
     accessSpecifier = accessSpecifier() t = <CLASS> name=<IDENTIFIER> "{"
     members = defMembers()

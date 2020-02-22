@@ -8,19 +8,19 @@ import java.util.List;
 public class ClassEntity extends Entity {
     private String name;
     private AccessSpecifier accessSpecifier;
-    private List<Member> memberList;
+    private List<Entity> members;
 
-    public ClassEntity(Location location, AccessSpecifier accessSpecifier, String name, List<Member> members) {
+    public ClassEntity(Location location, AccessSpecifier accessSpecifier, String name, List<Entity> members) {
         this.location = location;
         this.accessSpecifier = accessSpecifier;
         this.name = name;
-        this.memberList = members;
+        this.members = members;
     }
 
     @Override
     public void _dump(Dumper dumper) {
         dumper.printMember("specifier", accessSpecifier.toString());
         dumper.printMember("name", name);
-        dumper.printMember("members", memberList);
+        dumper.printMember("members", members);
     }
 }

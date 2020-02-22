@@ -31,9 +31,9 @@ public class Dumper {
 
     public void printMember(String name, List<? extends Dumpable> objects) {
         printIndent();
+        printStream.println(name + ":");
         indent++;
         for (Dumpable dumpable : objects) {
-            printStream.println(name + ":");
             dumpable.dump(this);
         }
         indent--;
